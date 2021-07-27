@@ -581,6 +581,7 @@ pub fn output_html(
     }
 
     html::gen_coverage_json(&global.stats, &config, &output);
+    html::gen_info_json(&global.stats, &config, &output);
 }
 
 #[cfg(test)]

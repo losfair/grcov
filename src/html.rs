@@ -521,3 +521,40 @@ pub fn gen_coverage_json(stats: &HtmlStats, conf: &Config, output: &Path) {
         eprintln!("cannot write the file {:?}", output_file);
     }
 }
+
+pub fn gen_info_json(stats: &HtmlStats, _conf: &Config, output: &Path) {
+    #[derive(Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct CoverageData {
+        line_coverage: f64,
+        function_coverage: f64,
+        branch_coverage: f64,
+    }
+
+    let output_file = output.join("info.json");
+    create_parent(&output_file);
+    let mut output_stream = match File::create(&output_file) {
+        Err(_) => {
+            eprintln!("Cannot create file {:?}", output_file);
+            return;
+        }
+        Ok(f) => f,
+    };
+
+    let line_coverage = stats.covered_lines as f64 / stats.total_lines as f64;
+    let function_coverage = stats.covered_funs as f64 / stats.total_funs as f64;
+    let branch_coverage = stats.covered_branches as f64 / stats.total_branches as f64;
+
+    let res = serde_json::to_writer(
+        &mut output_stream,
+        &CoverageData {
+            line_coverage,
+            function_coverage,
+            branch_coverage,
+        },
+    );
+
+    if res.is_err() {
+        eprintln!("cannot write the file {:?}", output_file);
+    }
+}
